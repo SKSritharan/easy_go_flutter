@@ -30,16 +30,45 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   bool isBusExist = false;
 
-  Map<PolylineId, Polyline> polylines = {};
-  List<LatLng> polylineCoordinates = [];
+  String googleAPiKey = "AIzaSyCyJfXm0uGQ2juS_8nRLtwPEcCpNmYLym4";
   PolylinePoints polylinePoints = PolylinePoints();
-  String googleAPiKey = "AIzaSyChUaxAEn2iG9rUmCne6kNU2MsK4_JGn60";
+  Map<PolylineId, Polyline> polylines = {};
+
+  void _getPolyline() async {
+    List<LatLng> polylineCoordinates = [];
+    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+      googleAPiKey,
+      const PointLatLng(6.9934, 81.0550),
+      const PointLatLng(6.9349, 81.1527),
+      travelMode: TravelMode.driving,
+    );
+    if (result.points.isNotEmpty) {
+      result.points.forEach((PointLatLng point) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      });
+    } else {
+      print(result.errorMessage);
+    }
+    _addPolyLine(polylineCoordinates);
+  }
+
+  _addPolyLine(List<LatLng> polylineCoordinates) {
+    PolylineId id = const PolylineId("poly");
+    Polyline polyline = Polyline(
+        polylineId: id,
+        points: polylineCoordinates,
+        width: 8,
+        color: Theme.of(context).primaryColor);
+    polylines[id] = polyline;
+    setState(() {});
+  }
 
   @override
   void initState() {
-    super.initState();
     _checkIfBusExists();
     _checkLocationPermission();
+    _getPolyline();
+    super.initState();
   }
 
   Future<void> _checkIfBusExists() async {
@@ -190,27 +219,40 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                                   icon: BitmapDescriptor.defaultMarkerWithHue(
                                     BitmapDescriptor.hueBlue,
                                   ),
+                                  markerId: const MarkerId('from'),
+                                  position: LatLng(
+                                    from.latitude,
+                                    from.longitude,
+                                  ),
+                                  infoWindow:
+                                      InfoWindow(title: busLocation.name),
+                                ),
+                                Marker(
+                                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                                    BitmapDescriptor.hueBlue,
+                                  ),
+                                  markerId: const MarkerId('to'),
+                                  position: LatLng(
+                                    to.latitude,
+                                    to.longitude,
+                                  ),
+                                  infoWindow:
+                                      InfoWindow(title: busLocation.name),
+                                ),
+                                Marker(
+                                  icon: BitmapDescriptor.defaultMarkerWithHue(
+                                    BitmapDescriptor.hueBlue,
+                                  ),
                                   markerId: MarkerId(busLocation.id),
-                                  position: LatLng(busLocation.latitude,
-                                      busLocation.longitude),
+                                  position: LatLng(
+                                    busLocation.latitude,
+                                    busLocation.longitude,
+                                  ),
                                   infoWindow:
                                       InfoWindow(title: busLocation.name),
                                 ),
                               },
-                              polylines: Set<Polyline>.of(
-                                {
-                                  Polyline(
-                                    polylineId: PolylineId(busLocation.id),
-                                    points: [from, to],
-                                    patterns: [
-                                      PatternItem.dash(20.0),
-                                      PatternItem.gap(10)
-                                    ],
-                                    width: 3,
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                },
-                              ),
+                              polylines: Set<Polyline>.of(polylines.values),
                             );
                           } else {
                             return const Center(
@@ -249,7 +291,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             FloatingActionButton(
               onPressed: () => addBusDetails(size),
               backgroundColor: Theme.of(context).primaryColor,
-              child: const Icon(Icons.add),
+              child: Icon(isBusExist ? Icons.directions_bus : Icons.add),
             ),
             const SizedBox(
               height: 10,
