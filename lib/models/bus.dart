@@ -1,16 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Bus {
   final String id;
   final String name;
-  double latitude;
-  double longitude;
+  final String number;
+  LatLng from;
+  LatLng to;
 
   Bus({
     required this.id,
     required this.name,
-    required this.latitude,
-    required this.longitude,
+    required this.number,
+    required this.from,
+    required this.to,
   });
 
   static Bus fromDocumentSnapshot(DocumentSnapshot snapshot) {
@@ -18,8 +21,9 @@ class Bus {
     return Bus(
       id: snapshot.id,
       name: data['name'],
-      latitude: data['latitude'],
-      longitude: data['longitude'],
+      number: data['number'],
+      from: LatLng(data['from']['latitude'], data['from']),
+      to: LatLng(data['to']['latitude'], data['to']),
     );
   }
 }

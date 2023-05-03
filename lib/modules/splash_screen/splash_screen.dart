@@ -17,9 +17,13 @@ class _SplashScreenState extends State<SplashScreen> {
       builder: (controller) => Scaffold(
         body: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.asset('assets/images/app_logo.png', width: 100,),
+              Image.asset(
+                'assets/images/app_logo.png',
+                width: 100,
+              ),
               Text.rich(
                 TextSpan(
                   children: [

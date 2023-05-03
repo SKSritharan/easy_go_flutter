@@ -124,7 +124,6 @@ class SignUpScreen extends StatelessWidget {
                                 value: controller.selectedRole,
                                 icon: const Icon(
                                     Icons.keyboard_arrow_down_rounded),
-                                
                                 decoration: const InputDecoration.collapsed(
                                   hintText: 'Select an User Role',
                                 ),

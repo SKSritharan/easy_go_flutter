@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 
-import '../../models/bus.dart';
+import '../../models/location.dart';
 import '../../routes/app_routes.dart';
 import './controller/user_home_controller.dart';
 
@@ -108,7 +108,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           width: size.width,
           child: StreamBuilder(
             stream:
-                FirebaseFirestore.instance.collection('location').snapshots(),
+                FirebaseFirestore.instance.collection('locations').snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 final buses = snapshot.data!.docs.map((doc) {
@@ -116,7 +116,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   final longitude = doc['longitude'] as double;
                   final name = doc['name'] as String;
 
-                  return Bus(
+                  return BusLocationData(
                     id: doc.id,
                     name: name,
                     latitude: latitude,

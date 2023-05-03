@@ -6,11 +6,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../models/bus.dart';
+
 class LocationStreamButton extends StatefulWidget {
   const LocationStreamButton({super.key});
 
   @override
-  _LocationStreamButtonState createState() => _LocationStreamButtonState();
+  State<LocationStreamButton> createState() => _LocationStreamButtonState();
 }
 
 class _LocationStreamButtonState extends State<LocationStreamButton> {
@@ -19,22 +21,43 @@ class _LocationStreamButtonState extends State<LocationStreamButton> {
   StreamSubscription<LocationData>? locationSubscription;
   bool _streaming = false;
 
+  String name = '';
+  String number = '';
+  String from = '';
+  String to = '';
+
   @override
   void dispose() {
     locationSubscription?.cancel();
     super.dispose();
   }
 
+  Future<void> getBusInfo() async {
+    DocumentSnapshot<Map<String, dynamic>> documentSnapshot =
+        await FirebaseFirestore.instance
+            .collection('buses')
+            .doc(auth!.uid)
+            .get();
+
+    setState(() {
+      name = documentSnapshot['name'] as String;
+      number = documentSnapshot['number'] as String;
+      from = documentSnapshot['from'] as String;
+      to = documentSnapshot['to'] as String;
+    });
+  }
+
   getLocation() async {
     try {
       final LocationData locationResult = await location.getLocation();
+      await getBusInfo();
       await FirebaseFirestore.instance
-          .collection('location')
+          .collection('locations')
           .doc(auth!.uid)
           .set({
         'latitude': locationResult.latitude,
         'longitude': locationResult.longitude,
-        'name': 'john'
+        'name': name,
       }, SetOptions(merge: true));
     } catch (e) {
       print(e);
@@ -53,12 +76,12 @@ class _LocationStreamButtonState extends State<LocationStreamButton> {
       locationSubscription = null;
     }).listen((LocationData currentlocation) async {
       await FirebaseFirestore.instance
-          .collection('location')
+          .collection('locations')
           .doc(auth!.uid)
           .set({
         'latitude': currentlocation.latitude,
         'longitude': currentlocation.longitude,
-        'name': 'john',
+        'name': name,
       }, SetOptions(merge: true));
     });
   }
