@@ -11,6 +11,8 @@ import '../../models/location.dart';
 import '../../routes/app_routes.dart';
 import '../../utils/widgets/location_stream_button.dart';
 import './controller/driver_home_controller.dart';
+import '../../utils/constants.dart' as constants;
+
 
 class DriverHomeScreen extends StatefulWidget {
   const DriverHomeScreen({super.key});
@@ -30,14 +32,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   bool isBusExist = false;
 
-  String googleAPiKey = "AIzaSyAgQzrIwSaqE9Y5dUYaCoObWO1ttYXRp9E";
   PolylinePoints polylinePoints = PolylinePoints();
   Map<PolylineId, Polyline> polylines = {};
 
   void _getPolyline() async {
     List<LatLng> polylineCoordinates = [];
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      googleAPiKey,
+      constants.googleMapAPiKey,
       const PointLatLng(6.9934, 81.0550),
       const PointLatLng(6.9349, 81.1527),
       travelMode: TravelMode.driving,

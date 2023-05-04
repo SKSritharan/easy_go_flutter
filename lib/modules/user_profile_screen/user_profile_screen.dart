@@ -83,7 +83,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   physics: const BouncingScrollPhysics(),
                   children: [
                     ProfileWidget(
-                      imagePath: userData!['image'],
+                      imagePath: userData['image'],
                       isEdit: true,
                       onClicked: pickImage,
                     ),
@@ -92,22 +92,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          userData!['name'],
+                          userData['name'],
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
-                          userData!['email'],
+                          userData['email'],
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
-                          userData!['about'],
+                          userData['about'],
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16),
                         ),
                         Text(
-                          userData!['role'],
+                          userData['role'],
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 12),
                         ),

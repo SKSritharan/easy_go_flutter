@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -8,6 +9,7 @@ import 'package:location/location.dart';
 import '../../models/location.dart';
 import '../../routes/app_routes.dart';
 import './controller/user_home_controller.dart';
+import '../../utils/constants.dart' as constants;
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({Key? key}) : super(key: key);
@@ -23,6 +25,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   bool _serviceEnabled = false;
   PermissionStatus _permissionGranted = PermissionStatus.denied;
   LocationData? _locationData;
+
+  PolylinePoints polylinePoints = PolylinePoints();
+  Map<PolylineId, Polyline> polylines = Map<PolylineId, Polyline>.fromIterable(
+    [],
+    key: (polyline) => PolylineId(polyline.polylineId),
+    value: (polyline) => polyline,
+  );
 
   @override
   void initState() {
@@ -141,15 +150,55 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   markers: buses
                       .map(
                         (bus) => Marker(
-                          icon: BitmapDescriptor.defaultMarkerWithHue(
-                            BitmapDescriptor.hueBlue,
-                          ),
-                          markerId: MarkerId(bus.id),
-                          position: LatLng(bus.latitude, bus.longitude),
-                          infoWindow: InfoWindow(title: bus.name),
-                        ),
+                            icon: BitmapDescriptor.defaultMarkerWithHue(
+                              BitmapDescriptor.hueBlue,
+                            ),
+                            markerId: MarkerId(bus.id),
+                            position: LatLng(bus.latitude, bus.longitude),
+                            infoWindow: InfoWindow(title: bus.name),
+                            onTap: () async {
+                              List<LatLng> polylineCoordinates = [];
+                              CollectionReference busesData = FirebaseFirestore
+                                  .instance
+                                  .collection('buses');
+                              final busData = await busesData.doc(bus.id).get();
+                              final fromLatLng = busData['from'] as GeoPoint;
+                              final toLatLng = busData['to'] as GeoPoint;
+                              final from = LatLng(
+                                  fromLatLng.latitude, fromLatLng.longitude);
+                              final to =
+                                  LatLng(toLatLng.latitude, toLatLng.longitude);
+
+                              PolylineResult result = await polylinePoints
+                                  .getRouteBetweenCoordinates(
+                                constants.googleMapAPiKey,
+                                PointLatLng(from.latitude, from.longitude),
+                                PointLatLng(to.latitude, to.longitude),
+                                travelMode: TravelMode.driving,
+                              );
+                              if (result.points.isNotEmpty) {
+                                result.points.forEach((PointLatLng point) {
+                                  polylineCoordinates.add(
+                                      LatLng(point.latitude, point.longitude));
+                                });
+                              } else {
+                                print(result.errorMessage);
+                              }
+
+                              setState(() {
+                                polylines.clear();
+                                PolylineId id = PolylineId(bus.id);
+                                Polyline polyline = Polyline(
+                                    polylineId: id,
+                                    points: polylineCoordinates,
+                                    width: 8,
+                                    color: Theme.of(context).primaryColor);
+                                polylines[id] = polyline;
+                              });
+                            }),
                       )
                       .toSet(),
+                  polylines: Set<Polyline>.of(polylines.values),
                 );
               } else {
                 return const Center(
@@ -225,182 +274,3 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 }
-
-
-// class _UserHomeScreenState extends State<UserHomeScreen> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return GetBuilder<UserHomeController>(
-//       builder: (controller) => Scaffold(
-//         appBar: AppBar(
-//           title: const Text('EasyGo'),
-//           actions: [
-//             PopupMenuButton(
-//               icon: const Icon(Icons.more_vert),
-//               itemBuilder: (context) {
-//                 return [
-//                   const PopupMenuItem(
-//                     value: 1,
-//                     textStyle: TextStyle(
-//                       fontSize: 16,
-//                       color: Colors.black,
-//                     ),
-//                     child: Text("Profile"),
-//                   ),
-//                   const PopupMenuItem(
-//                     value: 2,
-//                     textStyle: TextStyle(
-//                       fontSize: 16,
-//                       color: Colors.red,
-//                       fontWeight: FontWeight.bold,
-//                     ),
-//                     child: Text("Logout"),
-//                   ),
-//                 ];
-//               },
-//               onSelected: (value) {
-//                 if (value == 1) {
-//                     Get.toNamed(AppRoutes.userProfileScreen);
-//                   } else if (value == 2) {
-//                     FirebaseAuth.instance.signOut();
-//                     Get.offAndToNamed(AppRoutes.signInScreen);
-//                   }
-//               },
-//             ),
-//           ],
-//         ),
-//         body: Column(
-//           children: [
-//             TextButton(
-//               onPressed: () {
-//                 controller.getLocation();
-//               },
-//               child: const Text('Add my location'),
-//             ),
-//             TextButton(
-//               onPressed: () {
-//                 controller.listenLocation();
-//               },
-//               child: const Text('Enable live location'),
-//             ),
-//             TextButton(
-//               onPressed: () {
-//                 controller.stopListening();
-//               },
-//               child: const Text('Stop live location'),
-//             ),
-//             Expanded(
-//                 child: StreamBuilder(
-//               stream:
-//                   FirebaseFirestore.instance.collection('location').snapshots(),
-//               builder: (context, snapshot) {
-//                 if (snapshot.hasData) {
-//                   final locations = snapshot.data!.docs.map((doc) {
-//                     final latitude = doc['latitude'] as double;
-//                     final longitude = doc['longitude'] as double;
-//                     return LatLng(latitude, longitude);
-//                   }).toList();
-
-//                   return GoogleMap(
-//                     initialCameraPosition: const CameraPosition(
-//                       target: LatLng(7.8731, 80.7718),
-//                       zoom: 10,
-//                     ),
-//                     markers: locations
-//                         .map(
-//                           (location) => Marker(
-//                             icon: BitmapDescriptor.defaultMarkerWithHue(
-//                                 BitmapDescriptor.hueBlue),
-//                             markerId: MarkerId(location.toString()),
-//                             position: location,
-//                           ),
-//                         )
-//                         .toSet(),
-//                   );
-//                 } else {
-//                   return const Center(
-//                     child: CircularProgressIndicator(),
-//                   );
-//                 }
-//               },
-//             )),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class MyMap extends StatefulWidget {
-//   final String user_id;
-
-//   const MyMap(this.user_id, {super.key});
-//   @override
-//   _MyMapState createState() => _MyMapState();
-// }
-
-// class _MyMapState extends State<MyMap> {
-//   final loc.Location location = loc.Location();
-//   late GoogleMapController _controller;
-//   bool _added = false;
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//         body: StreamBuilder(
-//       stream: FirebaseFirestore.instance.collection('location').snapshots(),
-//       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-//         if (_added) {
-//           mymap(snapshot);
-//         }
-//         if (!snapshot.hasData) {
-//           return const Center(child: CircularProgressIndicator());
-//         }
-//         return GoogleMap(
-//           mapType: MapType.normal,
-//           markers: {
-//             Marker(
-//                 position: LatLng(
-//                   snapshot.data!.docs.singleWhere(
-//                       (element) => element.id == widget.user_id)['latitude'],
-//                   snapshot.data!.docs.singleWhere(
-//                       (element) => element.id == widget.user_id)['longitude'],
-//                 ),
-//                 markerId: const MarkerId('id'),
-//                 icon: BitmapDescriptor.defaultMarkerWithHue(
-//                     BitmapDescriptor.hueMagenta)),
-//           },
-//           initialCameraPosition: CameraPosition(
-//               target: LatLng(
-//                 snapshot.data!.docs.singleWhere(
-//                     (element) => element.id == widget.user_id)['latitude'],
-//                 snapshot.data!.docs.singleWhere(
-//                     (element) => element.id == widget.user_id)['longitude'],
-//               ),
-//               zoom: 14.47),
-//           onMapCreated: (GoogleMapController controller) async {
-//             setState(() {
-//               _controller = controller;
-//               _added = true;
-//             });
-//           },
-//         );
-//       },
-//     ));
-//   }
-
-//   Future<void> mymap(AsyncSnapshot<QuerySnapshot> snapshot) async {
-//     await _controller.animateCamera(
-//       CameraUpdate.newCameraPosition(
-//         CameraPosition(
-//           target: LatLng(
-//             snapshot.data!.docs.singleWhere(
-//                 (element) => element.id == widget.user_id)['latitude'],
-//             snapshot.data!.docs.singleWhere(
-//                 (element) => element.id == widget.user_id)['longitude'],
-//           ),
-//           zoom: 14.47,
-//         ),
-//       ),
-//     );
-//   }
-// }
