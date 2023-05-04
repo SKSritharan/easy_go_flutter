@@ -30,7 +30,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   bool isBusExist = false;
 
-  String googleAPiKey = "AIzaSyCyJfXm0uGQ2juS_8nRLtwPEcCpNmYLym4";
+  String googleAPiKey = "AIzaSyAgQzrIwSaqE9Y5dUYaCoObWO1ttYXRp9E";
   PolylinePoints polylinePoints = PolylinePoints();
   Map<PolylineId, Polyline> polylines = {};
 
@@ -119,37 +119,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         appBar: AppBar(
           title: const Text('EasyGo'),
           actions: [
-            PopupMenuButton(
-              icon: const Icon(Icons.more_vert),
-              itemBuilder: (context) {
-                return [
-                  const PopupMenuItem(
-                    value: 1,
-                    textStyle: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                    child: Text("Profile"),
-                  ),
-                  const PopupMenuItem(
-                    value: 2,
-                    textStyle: TextStyle(
-                      fontSize: 16,
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    child: Text("Logout"),
-                  ),
-                ];
+            IconButton(
+              onPressed: () {
+                Get.toNamed(AppRoutes.userProfileScreen);
               },
-              onSelected: (value) {
-                if (value == 1) {
-                  Get.toNamed(AppRoutes.userProfileScreen);
-                } else if (value == 2) {
-                  FirebaseAuth.instance.signOut();
-                  Get.offAndToNamed(AppRoutes.signInScreen);
-                }
-              },
+              icon: const Icon(Icons.account_circle),
             ),
           ],
         ),
@@ -288,11 +262,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             const SizedBox(
               height: 10,
             ),
-            FloatingActionButton(
-              onPressed: () => addBusDetails(size),
-              backgroundColor: Theme.of(context).primaryColor,
-              child: Icon(isBusExist ? Icons.directions_bus : Icons.add),
-            ),
+            if (!isBusExist)
+              FloatingActionButton(
+                onPressed: () => addBusDetails(size),
+                backgroundColor: Theme.of(context).primaryColor,
+                child: const Icon(Icons.add),
+              ),
             const SizedBox(
               height: 10,
             ),
@@ -364,8 +339,19 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                             },
                           ),
                           const SizedBox(height: 8),
-                          TextFormField(
-                            controller: controller.fromController,
+                          DropdownButtonFormField<String>(
+                            value: controller.fromController,
+                            onChanged: (value) {
+                              setState(() {
+                                controller.fromController = value;
+                              });
+                            },
+                            validator: (value) {
+                              if (value == null) {
+                                return 'Please select an starting stop';
+                              }
+                              return null;
+                            },
                             decoration: InputDecoration(
                               hintText: 'From',
                               border: OutlineInputBorder(
@@ -373,16 +359,43 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                               ),
                               prefixIcon: const Icon(Icons.arrow_circle_up),
                             ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: '6.9914431, 81.0635672',
+                                child: Text('Badulla'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.8297737,80.9858022',
+                                child: Text('Bandarawela'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.8733864,81.0466561',
+                                child: Text('Ella'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.9554142,81.0334903',
+                                child: Text('Hali-ela'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.9344405, 81.1524696',
+                                child: Text('Passara'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          DropdownButtonFormField<String>(
+                            value: controller.toController,
+                            onChanged: (value) {
+                              setState(() {
+                                controller.toController = value;
+                              });
+                            },
                             validator: (value) {
-                              if (value!.isEmpty) {
-                                return 'The bus start stop is required';
+                              if (value == null) {
+                                return 'Please select an destination stop';
                               }
                               return null;
                             },
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: controller.toController,
                             decoration: InputDecoration(
                               hintText: 'To',
                               border: OutlineInputBorder(
@@ -390,12 +403,28 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                               ),
                               prefixIcon: const Icon(Icons.arrow_circle_down),
                             ),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return 'The bus destination stop is required';
-                              }
-                              return null;
-                            },
+                            items: const [
+                              DropdownMenuItem(
+                                value: '6.9344405, 81.1524696',
+                                child: Text('Passara'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.9554142,81.0334903',
+                                child: Text('Hali-ela'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.8733864,81.0466561',
+                                child: Text('Ella'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.8297737,80.9858022',
+                                child: Text('Bandarawela'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.9914431, 81.0635672',
+                                child: Text('Badulla'),
+                              ),
+                            ],
                           ),
                           const Spacer(),
                           SizedBox(

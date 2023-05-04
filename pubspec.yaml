@@ -46,6 +46,8 @@ dependencies:
   firebase_auth: ^4.4.2
   get: ^4.6.5
   json_theme: ^4.0.3+2
+  image_picker: ^0.8.7+4
+  firebase_storage: ^11.1.1
 
 dev_dependencies:
   flutter_test:

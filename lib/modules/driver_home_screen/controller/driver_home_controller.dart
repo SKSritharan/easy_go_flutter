@@ -8,8 +8,8 @@ import '../../../utils/widgets/snackbar_service.dart';
 class DriverHomeController extends GetxController {
   final nameController = TextEditingController();
   final numberController = TextEditingController();
-  final fromController = TextEditingController();
-  final toController = TextEditingController();
+  String? fromController;
+  String? toController;
 
   RxBool isLoading = false.obs;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -30,11 +30,10 @@ class DriverHomeController extends GetxController {
         await ref.doc(user!.uid).set({
           'name': nameController.text,
           'number': numberController.text,
-          'from': GeoPoint(
-              double.parse(fromController.text.split(',')[0].trim()),
-              double.parse(fromController.text.split(',')[1].trim())),
-          'to': GeoPoint(double.parse(toController.text.split(',')[0].trim()),
-              double.parse(toController.text.split(',')[1].trim())),
+          'from': GeoPoint(double.parse(fromController!.split(',')[0].trim()),
+              double.parse(fromController!.split(',')[1].trim())),
+          'to': GeoPoint(double.parse(toController!.split(',')[0].trim()),
+              double.parse(toController!.split(',')[1].trim())),
         });
         Get.back();
         SnackbarService.showSuccess('Bus Registered Successfully!');
@@ -49,8 +48,8 @@ class DriverHomeController extends GetxController {
   void dispose() {
     nameController.dispose();
     numberController.dispose();
-    fromController.dispose();
-    toController.dispose();
+    fromController = '';
+    toController = '';
     super.dispose();
   }
 }

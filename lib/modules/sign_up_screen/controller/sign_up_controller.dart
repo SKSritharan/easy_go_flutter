@@ -31,7 +31,6 @@ class SignUpController extends GetxController {
       onTapSetLoading();
 
       try {
-
         await auth
             .createUserWithEmailAndPassword(
               email: emailController.text,
@@ -40,8 +39,12 @@ class SignUpController extends GetxController {
             .then(
               (value) => addUserToDataStore(),
             );
+        if (selectedRole == "User") {
+          Get.offAndToNamed(AppRoutes.userHomeScreen);
+        } else {
+          Get.offAndToNamed(AppRoutes.driverHomeScreen);
+        }
 
-        Get.offAndToNamed(AppRoutes.userHomeScreen);
         SnackbarService.showSuccess('Register Success!');
       } on FirebaseAuthException catch (e) {
         if (e.code == 'email-already-in-use') {
@@ -58,13 +61,16 @@ class SignUpController extends GetxController {
     }
   }
 
-  void addUserToDataStore() async{
+  void addUserToDataStore() async {
     var user = auth.currentUser;
     CollectionReference ref = firestore.collection('users');
     await ref.doc(user!.uid).set({
       'name': nameController.text,
       'email': emailController.text,
       'role': selectedRole,
+      'image':
+          "https://static.vecteezy.com/system/resources/previews/021/548/095/original/default-profile-picture-avatar-user-avatar-icon-person-icon-head-icon-profile-picture-icons-default-anonymous-user-male-and-female-businessman-photo-placeholder-social-network-avatar-portrait-free-vector.jpg",
+      'about': "Hi there, I'm  using EasyGo.",
     });
   }
 
