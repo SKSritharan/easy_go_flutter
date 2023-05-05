@@ -237,14 +237,43 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
+                          DropdownButtonFormField<String>(
+                            onChanged: (value) {},
+                            validator: (value) {
+                              if (value == null) {
+                                return 'Please select an starting stop';
+                              }
+                              return null;
+                            },
                             decoration: InputDecoration(
-                              hintText: 'Enter your destination',
+                              hintText: 'Select your destination stop',
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              prefixIcon: const Icon(Icons.search),
+                              prefixIcon: const Icon(Icons.search_rounded),
                             ),
+                            items: const [
+                              DropdownMenuItem(
+                                value: '6.9914431, 81.0635672',
+                                child: Text('Badulla'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.8297737,80.9858022',
+                                child: Text('Bandarawela'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.8733864,81.0466561',
+                                child: Text('Ella'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.9554142,81.0334903',
+                                child: Text('Hali-ela'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.9344405, 81.1524696',
+                                child: Text('Passara'),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 16),
                           SizedBox(

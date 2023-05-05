@@ -40,9 +40,9 @@ class SignUpController extends GetxController {
               (value) => addUserToDataStore(),
             );
         if (selectedRole == "User") {
-          Get.offAndToNamed(AppRoutes.userHomeScreen);
+          Get.offAllNamed(AppRoutes.userHomeScreen);
         } else {
-          Get.offAndToNamed(AppRoutes.driverHomeScreen);
+          Get.offAllNamed(AppRoutes.driverHomeScreen);
         }
 
         SnackbarService.showSuccess('Register Success!');

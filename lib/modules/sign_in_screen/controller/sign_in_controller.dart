@@ -61,9 +61,9 @@ class SignInController extends GetxController {
         .then((DocumentSnapshot documentSnapshot) {
       if (documentSnapshot.exists) {
         if (documentSnapshot.get('role') == "User") {
-          Get.offAndToNamed(AppRoutes.userHomeScreen);
+          Get.offAllNamed(AppRoutes.userHomeScreen);
         } else {
-          Get.offAndToNamed(AppRoutes.driverHomeScreen);
+          Get.offAllNamed(AppRoutes.driverHomeScreen);
         }
       } else {
         print('Document does not exist on the database');

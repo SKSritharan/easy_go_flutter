@@ -185,7 +185,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ElevatedButton(
                       onPressed: () {
                         FirebaseAuth.instance.signOut();
-                        Get.offAndToNamed(AppRoutes.signInScreen);
+                        Get.offAllNamed(AppRoutes.signInScreen);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.error,

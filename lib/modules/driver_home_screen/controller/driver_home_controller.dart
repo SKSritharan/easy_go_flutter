@@ -35,6 +35,14 @@ class DriverHomeController extends GetxController {
           'to': GeoPoint(double.parse(toController!.split(',')[0].trim()),
               double.parse(toController!.split(',')[1].trim())),
         });
+
+        CollectionReference ref2 = firestore.collection('locations');
+        await ref2.doc(user.uid).set({
+          'name': nameController.text,
+          'latitude': double.parse(fromController!.split(',')[0].trim()),
+          'longitude': double.parse(toController!.split(',')[0].trim())
+        });
+
         Get.back();
         SnackbarService.showSuccess('Bus Registered Successfully!');
       } catch (e) {

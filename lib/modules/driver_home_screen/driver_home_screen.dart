@@ -13,7 +13,6 @@ import '../../utils/widgets/location_stream_button.dart';
 import './controller/driver_home_controller.dart';
 import '../../utils/constants.dart' as constants;
 
-
 class DriverHomeScreen extends StatefulWidget {
   const DriverHomeScreen({super.key});
 
@@ -30,17 +29,15 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   LocationData? _locationData;
   final user = FirebaseAuth.instance.currentUser;
 
-  bool isBusExist = false;
-
   PolylinePoints polylinePoints = PolylinePoints();
   Map<PolylineId, Polyline> polylines = {};
 
-  void _getPolyline() async {
+  void _getPolyline(PointLatLng from, PointLatLng to) async {
     List<LatLng> polylineCoordinates = [];
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       constants.googleMapAPiKey,
-      const PointLatLng(6.9934, 81.0550),
-      const PointLatLng(6.9349, 81.1527),
+      from,
+      to,
       travelMode: TravelMode.driving,
     );
     if (result.points.isNotEmpty) {
@@ -66,20 +63,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   @override
   void initState() {
-    _checkIfBusExists();
     _checkLocationPermission();
-    _getPolyline();
     super.initState();
-  }
-
-  Future<void> _checkIfBusExists() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('buses')
-        .doc(user!.uid)
-        .get();
-    setState(() {
-      isBusExist = snapshot.exists;
-    });
   }
 
   Future<void> _checkLocationPermission() async {
@@ -128,152 +113,154 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
             ),
           ],
         ),
-        body: isBusExist
-            ? SizedBox(
-                height: size.height,
-                width: size.width,
-                child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        body: SizedBox(
+          height: size.height,
+          width: size.width,
+          child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .collection('buses')
+                .doc(user!.uid)
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.exists) {
+                final name = snapshot.data!['name'] as String;
+                final number = snapshot.data!['number'] as String;
+                final fromLatLng = snapshot.data!['from'] as GeoPoint;
+                final toLatLng = snapshot.data!['to'] as GeoPoint;
+                final from = LatLng(fromLatLng.latitude, fromLatLng.longitude);
+                final to = LatLng(toLatLng.latitude, toLatLng.longitude);
+
+                final bus = Bus(
+                  id: user!.uid,
+                  name: name,
+                  number: number,
+                  from: from,
+                  to: to,
+                );
+
+                return StreamBuilder(
                   stream: FirebaseFirestore.instance
-                      .collection('buses')
+                      .collection('locations')
                       .doc(user!.uid)
                       .snapshots(),
                   builder: (context, snapshot) {
-                    if (snapshot.hasData && snapshot.data!.exists) {
+                    if (snapshot.hasData) {
                       final name = snapshot.data!['name'] as String;
-                      final number = snapshot.data!['number'] as String;
-                      final fromLatLng = snapshot.data!['from'] as GeoPoint;
-                      final toLatLng = snapshot.data!['to'] as GeoPoint;
-                      final from =
-                          LatLng(fromLatLng.latitude, fromLatLng.longitude);
-                      final to = LatLng(toLatLng.latitude, toLatLng.longitude);
+                      final latitude = snapshot.data!['latitude'] as double;
+                      final longitude = snapshot.data!['longitude'] as double;
 
-                      final bus = Bus(
+                      final busLocation = BusLocationData(
                         id: user!.uid,
                         name: name,
-                        number: number,
-                        from: from,
-                        to: to,
+                        latitude: latitude,
+                        longitude: longitude,
                       );
 
-                      return StreamBuilder(
-                        stream: FirebaseFirestore.instance
-                            .collection('locations')
-                            .doc(user!.uid)
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            final name = snapshot.data!['name'] as String;
-                            final latitude =
-                                snapshot.data!['latitude'] as double;
-                            final longitude =
-                                snapshot.data!['longitude'] as double;
-
-                            final busLocation = BusLocationData(
-                              id: user!.uid,
-                              name: name,
-                              latitude: latitude,
-                              longitude: longitude,
-                            );
-
-                            return GoogleMap(
-                              zoomGesturesEnabled: true,
-                              zoomControlsEnabled: false,
-                              myLocationEnabled: true,
-                              myLocationButtonEnabled: false,
-                              onMapCreated: (GoogleMapController controller) {
-                                setState(() {
-                                  mapController = controller;
-                                });
-                              },
-                              initialCameraPosition: const CameraPosition(
-                                target: LatLng(7.8731, 80.7718),
-                                zoom: 7,
-                              ),
-                              markers: {
-                                Marker(
-                                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                                    BitmapDescriptor.hueBlue,
-                                  ),
-                                  markerId: const MarkerId('from'),
-                                  position: LatLng(
-                                    from.latitude,
-                                    from.longitude,
-                                  ),
-                                  infoWindow:
-                                      InfoWindow(title: busLocation.name),
-                                ),
-                                Marker(
-                                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                                    BitmapDescriptor.hueBlue,
-                                  ),
-                                  markerId: const MarkerId('to'),
-                                  position: LatLng(
-                                    to.latitude,
-                                    to.longitude,
-                                  ),
-                                  infoWindow:
-                                      InfoWindow(title: busLocation.name),
-                                ),
-                                Marker(
-                                  icon: BitmapDescriptor.defaultMarkerWithHue(
-                                    BitmapDescriptor.hueBlue,
-                                  ),
-                                  markerId: MarkerId(busLocation.id),
-                                  position: LatLng(
-                                    busLocation.latitude,
-                                    busLocation.longitude,
-                                  ),
-                                  infoWindow:
-                                      InfoWindow(title: busLocation.name),
-                                ),
-                              },
-                              polylines: Set<Polyline>.of(polylines.values),
-                            );
-                          } else {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
+                      return GoogleMap(
+                        zoomGesturesEnabled: true,
+                        zoomControlsEnabled: false,
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: false,
+                        mapToolbarEnabled: false,
+                        onMapCreated: (GoogleMapController controller) {
+                          setState(() {
+                            mapController = controller;
+                          });
+                          _getPolyline(
+                            PointLatLng(from.latitude, from.longitude),
+                            PointLatLng(to.latitude, to.longitude),
+                          );
                         },
+                        initialCameraPosition: const CameraPosition(
+                          target: LatLng(7.8731, 80.7718),
+                          zoom: 7,
+                        ),
+                        markers: {
+                          Marker(
+                            icon: BitmapDescriptor.defaultMarkerWithHue(
+                              BitmapDescriptor.hueBlue,
+                            ),
+                            markerId: const MarkerId('from'),
+                            position: LatLng(
+                              from.latitude,
+                              from.longitude,
+                            ),
+                            infoWindow: InfoWindow(title: busLocation.name),
+                          ),
+                          Marker(
+                            icon: BitmapDescriptor.defaultMarkerWithHue(
+                              BitmapDescriptor.hueBlue,
+                            ),
+                            markerId: const MarkerId('to'),
+                            position: LatLng(
+                              to.latitude,
+                              to.longitude,
+                            ),
+                            infoWindow: InfoWindow(title: busLocation.name),
+                          ),
+                          Marker(
+                            icon: BitmapDescriptor.defaultMarkerWithHue(
+                              BitmapDescriptor.hueBlue,
+                            ),
+                            markerId: MarkerId(busLocation.id),
+                            position: LatLng(
+                              busLocation.latitude,
+                              busLocation.longitude,
+                            ),
+                            infoWindow: InfoWindow(title: busLocation.name),
+                          ),
+                        },
+                        polylines: Set<Polyline>.of(polylines.values),
                       );
-                    } else if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
                     } else {
                       return const Center(
-                        child: Center(
-                          child: Text(
-                              'Bus not added yet!, Please add one to continue.'),
-                        ),
+                        child: CircularProgressIndicator(),
                       );
                     }
                   },
-                ),
-              )
-            : const Center(
-                child: Text('Bus not added yet!, Please add one to continue.'),
-              ),
-        floatingActionButton: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            if (isBusExist)
-              FloatingActionButton(
-                onPressed: _checkLocationPermission,
-                child: const Icon(Icons.my_location),
-              ),
-            const SizedBox(
-              height: 10,
-            ),
-            if (!isBusExist)
-              FloatingActionButton(
+                );
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                return const Center(
+                  child: Center(
+                    child:
+                        Text('Bus not added yet!, Please add one to continue.'),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+        floatingActionButton:
+            StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('buses')
+              .doc(user!.uid)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && snapshot.data!.exists) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  FloatingActionButton(
+                    onPressed: _checkLocationPermission,
+                    child: const Icon(Icons.my_location),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const LocationStreamButton(),
+                ],
+              );
+            } else {
+              return FloatingActionButton(
                 onPressed: () => addBusDetails(size),
                 backgroundColor: Theme.of(context).primaryColor,
                 child: const Icon(Icons.add),
-              ),
-            const SizedBox(
-              height: 10,
-            ),
-            if (isBusExist) const LocationStreamButton(),
-          ],
+              );
+            }
+          }
         ),
       ),
     );
