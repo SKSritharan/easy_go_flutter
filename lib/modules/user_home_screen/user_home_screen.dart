@@ -78,37 +78,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         appBar: AppBar(
           title: const Text('EasyGo'),
           actions: [
-            PopupMenuButton(
-              icon: const Icon(Icons.more_vert),
-              itemBuilder: (context) {
-                return [
-                  const PopupMenuItem(
-                    value: 1,
-                    textStyle: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                    child: Text("Profile"),
-                  ),
-                  const PopupMenuItem(
-                    value: 2,
-                    textStyle: TextStyle(
-                      fontSize: 16,
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    child: Text("Logout"),
-                  ),
-                ];
+            IconButton(
+              onPressed: () {
+                Get.toNamed(AppRoutes.userProfileScreen);
               },
-              onSelected: (value) {
-                if (value == 1) {
-                  Get.toNamed(AppRoutes.userProfileScreen);
-                } else if (value == 2) {
-                  FirebaseAuth.instance.signOut();
-                  Get.offAndToNamed(AppRoutes.signInScreen);
-                }
-              },
+              icon: const Icon(Icons.account_circle),
             ),
           ],
         ),
@@ -138,6 +112,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   zoomControlsEnabled: false,
                   myLocationEnabled: true,
                   myLocationButtonEnabled: false,
+                  mapToolbarEnabled: false,
                   onMapCreated: (GoogleMapController controller) {
                     setState(() {
                       mapController = controller;
