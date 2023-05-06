@@ -53,7 +53,7 @@ class SignUpScreen extends StatelessWidget {
                             color: Theme.of(context).primaryColor,
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 4),
                         const Text(
                           'Let\'s Register to start journey',
                           style: TextStyle(

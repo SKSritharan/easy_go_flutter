@@ -229,24 +229,28 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             ),
                             items: const [
                               DropdownMenuItem(
-                                value: '6.9914431, 81.0635672',
-                                child: Text('Badulla'),
+                                value: '6.9336339,79.8526605',
+                                child: Text('Colombo'),
                               ),
                               DropdownMenuItem(
-                                value: '6.8297737,80.9858022',
-                                child: Text('Bandarawela'),
+                                value: '7.0923857,79.9891625',
+                                child: Text('Gampaha'),
                               ),
                               DropdownMenuItem(
-                                value: '6.8733864,81.0466561',
-                                child: Text('Ella'),
+                                value: '6.7744328,79.8801515',
+                                child: Text('Morattuwa'),
                               ),
                               DropdownMenuItem(
-                                value: '6.9554142,81.0334903',
-                                child: Text('Hali-ela'),
+                                value: '6.9346378,79.9814374',
+                                child: Text('Kaduwella'),
                               ),
                               DropdownMenuItem(
-                                value: '6.9344405, 81.1524696',
-                                child: Text('Passara'),
+                                value: '6.9111207,79.7049656',
+                                child: Text('Kollupitiya'),
+                              ),
+                              DropdownMenuItem(
+                                value: '6.0329092,80.2131825',
+                                child: Text('Galle'),
                               ),
                             ],
                           ),

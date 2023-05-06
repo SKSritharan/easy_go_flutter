@@ -12,6 +12,8 @@ import '../modules/sign_in_screen/binding/sign_in_binding.dart';
 import '../modules/sign_up_screen/binding/sign_up_binding.dart';
 import '../modules/user_home_screen/binding/user_home_binding.dart';
 import '../modules/driver_home_screen/binding/driver_home_binding.dart';
+import '../modules/bus_detail_screen/binding/bus_detail_binding.dart';
+import '../modules/bus_detail_screen/bus_detail_screen.dart';
 import '../modules/user_profile_screen/binding/user_profile_binding.dart';
 
 class AppPages {
@@ -45,6 +47,11 @@ class AppPages {
       name: AppRoutes.userProfileScreen,
       page: () => const UserProfileScreen(),
       binding: UserProfileBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.busDetailScreen,
+      page: () => const BusDetailScreen(),
+      binding: BusDetailBinding(),
     ),
   ];
 }

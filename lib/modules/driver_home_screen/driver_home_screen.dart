@@ -234,34 +234,43 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         ),
         floatingActionButton:
             StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collection('buses')
-              .doc(user!.uid)
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData && snapshot.data!.exists) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FloatingActionButton(
-                    onPressed: _checkLocationPermission,
-                    child: const Icon(Icons.my_location),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  const LocationStreamButton(),
-                ],
-              );
-            } else {
-              return FloatingActionButton(
-                onPressed: () => addBusDetails(size),
-                backgroundColor: Theme.of(context).primaryColor,
-                child: const Icon(Icons.add),
-              );
-            }
-          }
-        ),
+                stream: FirebaseFirestore.instance
+                    .collection('buses')
+                    .doc(user!.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data!.exists) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        FloatingActionButton(
+                          onPressed: _checkLocationPermission,
+                          child: const Icon(Icons.my_location),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        FloatingActionButton(
+                          onPressed: () {
+                            Get.toNamed(AppRoutes.busDetailScreen);
+                          },
+                          backgroundColor: Theme.of(context).primaryColor,
+                          child: const Icon(Icons.directions_bus_rounded),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        const LocationStreamButton(),
+                      ],
+                    );
+                  } else {
+                    return FloatingActionButton(
+                      onPressed: () => addBusDetails(size),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      child: const Icon(Icons.add),
+                    );
+                  }
+                }),
       ),
     );
   }
@@ -269,171 +278,171 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   void addBusDetails(size) {
     final controller = Get.put(DriverHomeController());
     Get.bottomSheet(
-      Obx(
-        () => SingleChildScrollView(
-          child: controller.isLoading.value
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : Form(
-                  key: controller.formKey,
-                  child: Container(
-                    height: size.height * 0.65,
-                    color: Colors.white,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Add Your Bus Here',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: controller.nameController,
-                            decoration: InputDecoration(
-                              hintText: 'Bus Name',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              prefixIcon: const Icon(Icons.directions_bus),
-                            ),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return 'The bus name is required';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: controller.numberController,
-                            decoration: InputDecoration(
-                              hintText: 'Bus Number',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              prefixIcon: const Icon(Icons.directions_bus),
-                            ),
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return 'The bus number is required';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                          DropdownButtonFormField<String>(
-                            value: controller.fromController,
-                            onChanged: (value) {
-                              setState(() {
-                                controller.fromController = value;
-                              });
-                            },
-                            validator: (value) {
-                              if (value == null) {
-                                return 'Please select an starting stop';
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'From',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              prefixIcon: const Icon(Icons.arrow_circle_up),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: '6.9914431, 81.0635672',
-                                child: Text('Badulla'),
-                              ),
-                              DropdownMenuItem(
-                                value: '6.8297737,80.9858022',
-                                child: Text('Bandarawela'),
-                              ),
-                              DropdownMenuItem(
-                                value: '6.8733864,81.0466561',
-                                child: Text('Ella'),
-                              ),
-                              DropdownMenuItem(
-                                value: '6.9554142,81.0334903',
-                                child: Text('Hali-ela'),
-                              ),
-                              DropdownMenuItem(
-                                value: '6.9344405, 81.1524696',
-                                child: Text('Passara'),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          DropdownButtonFormField<String>(
-                            value: controller.toController,
-                            onChanged: (value) {
-                              setState(() {
-                                controller.toController = value;
-                              });
-                            },
-                            validator: (value) {
-                              if (value == null) {
-                                return 'Please select an destination stop';
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'To',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              prefixIcon: const Icon(Icons.arrow_circle_down),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: '6.9344405, 81.1524696',
-                                child: Text('Passara'),
-                              ),
-                              DropdownMenuItem(
-                                value: '6.9554142,81.0334903',
-                                child: Text('Hali-ela'),
-                              ),
-                              DropdownMenuItem(
-                                value: '6.8733864,81.0466561',
-                                child: Text('Ella'),
-                              ),
-                              DropdownMenuItem(
-                                value: '6.8297737,80.9858022',
-                                child: Text('Bandarawela'),
-                              ),
-                              DropdownMenuItem(
-                                value: '6.9914431, 81.0635672',
-                                child: Text('Badulla'),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: controller.submitForm,
-                              style: ElevatedButton.styleFrom(
-                                fixedSize: const Size(0, 50),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: const Text('Submit'),
-                            ),
-                          ),
-                          const Spacer(),
-                        ],
-                      ),
-                    ),
+      Form(
+        key: controller.formKey,
+        child: Container(
+          height: size.height * 0.65,
+          color: Colors.white,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Add Your Bus Here',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: controller.nameController,
+                  decoration: InputDecoration(
+                    hintText: 'Bus Name',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    prefixIcon: const Icon(Icons.directions_bus),
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'The bus name is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: controller.numberController,
+                  decoration: InputDecoration(
+                    hintText: 'Bus Number',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    prefixIcon: const Icon(Icons.directions_bus),
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'The bus number is required';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: controller.fromController,
+                  onChanged: (value) {
+                    setState(() {
+                      controller.fromController = value;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Please select an starting stop';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'From',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    prefixIcon: const Icon(Icons.arrow_circle_up),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: '6.9336339,79.8526605',
+                      child: Text('Colombo'),
+                    ),
+                    DropdownMenuItem(
+                      value: '7.0923857,79.9891625',
+                      child: Text('Gampaha'),
+                    ),
+                    DropdownMenuItem(
+                      value: '6.7744328,79.8801515',
+                      child: Text('Morattuwa'),
+                    ),
+                    DropdownMenuItem(
+                      value: '6.9346378,79.9814374',
+                      child: Text('Kaduwella'),
+                    ),
+                    DropdownMenuItem(
+                      value: '6.9111207,79.7049656',
+                      child: Text('Kollupitiya'),
+                    ),
+                    DropdownMenuItem(
+                      value: '6.0329092,80.2131825',
+                      child: Text('Galle'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: controller.toController,
+                  onChanged: (value) {
+                    setState(() {
+                      controller.toController = value;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Please select an destination stop';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'To',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    prefixIcon: const Icon(Icons.arrow_circle_down),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: '6.0329092,80.2131825',
+                      child: Text('Galle'),
+                    ),
+                    DropdownMenuItem(
+                      value: '6.9111207,79.7049656',
+                      child: Text('Kollupitiya'),
+                    ),
+                    DropdownMenuItem(
+                      value: '6.9346378,79.9814374',
+                      child: Text('Kaduwella'),
+                    ),
+                    DropdownMenuItem(
+                      value: '6.7744328,79.8801515',
+                      child: Text('Morattuwa'),
+                    ),
+                    DropdownMenuItem(
+                      value: '7.0923857,79.9891625',
+                      child: Text('Gampaha'),
+                    ),
+                    DropdownMenuItem(
+                      value: '6.9336339,79.8526605',
+                      child: Text('Colombo'),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: controller.submitForm,
+                    style: ElevatedButton.styleFrom(
+                      fixedSize: const Size(0, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('Submit'),
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
+          ),
         ),
       ),
     );
